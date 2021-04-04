@@ -710,7 +710,7 @@ const EC_METHOD *EC_GFp_nistp224_method(void);
 const EC_METHOD *EC_GFp_nistp256_method(void);
 
 // EC_GFp_nistz256_method is a GFp method using montgomery multiplication, with
-// x86-64 optimized P256. See http://eprint.iacr.org/2013/816.
+// x86-64 optimized SECP256R1. See http://eprint.iacr.org/2013/816.
 const EC_METHOD *EC_GFp_nistz256_method(void);
 
 // An EC_WRAPPED_SCALAR is an |EC_SCALAR| with a parallel |BIGNUM|

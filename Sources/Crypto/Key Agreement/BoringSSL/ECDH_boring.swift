@@ -16,8 +16,8 @@
 #else
 @_implementationOnly import CCryptoBoringSSL
 
-extension P256.KeyAgreement.PrivateKey {
-    internal func openSSLSharedSecretFromKeyAgreement(with publicKeyShare: P256.KeyAgreement.PublicKey) throws -> SharedSecret {
+extension SECP256R1.KeyAgreement.PrivateKey {
+    internal func openSSLSharedSecretFromKeyAgreement(with publicKeyShare: SECP256R1.KeyAgreement.PublicKey) throws -> SharedSecret {
         let key = try self.impl.key.keyExchange(publicKey: publicKeyShare.impl.key)
         return SharedSecret(ss: key)
     }

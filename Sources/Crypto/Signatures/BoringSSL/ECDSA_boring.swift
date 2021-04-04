@@ -49,9 +49,9 @@ extension Data {
     }
 }
 
-extension P256.Signing.ECDSASignature {
+extension SECP256R1.Signing.ECDSASignature {
     init<D: DataProtocol>(openSSLDERSignature derRepresentation: D) throws {
-        self.rawRepresentation = try Data(derSignature: derRepresentation, over: P256.CurveDetails.self)
+        self.rawRepresentation = try Data(derSignature: derRepresentation, over: SECP256R1.CurveDetails.self)
     }
 
     var openSSLDERRepresentation: Data {
@@ -59,15 +59,15 @@ extension P256.Signing.ECDSASignature {
     }
 }
 
-extension P256.Signing.PrivateKey {
-    func openSSLSignature<D: Digest>(for digest: D) throws -> P256.Signing.ECDSASignature {
+extension SECP256R1.Signing.PrivateKey {
+    func openSSLSignature<D: Digest>(for digest: D) throws -> SECP256R1.Signing.ECDSASignature {
         let baseSignature = try self.impl.key.sign(digest: digest)
-        return try .init(rawRepresentation: Data(rawSignature: baseSignature, over: P256.CurveDetails.self))
+        return try .init(rawRepresentation: Data(rawSignature: baseSignature, over: SECP256R1.CurveDetails.self))
     }
 }
 
-extension P256.Signing.PublicKey {
-    func openSSLIsValidSignature<D: Digest>(_ signature: P256.Signing.ECDSASignature, for digest: D) -> Bool {
+extension SECP256R1.Signing.PublicKey {
+    func openSSLIsValidSignature<D: Digest>(_ signature: SECP256R1.Signing.ECDSASignature, for digest: D) -> Bool {
         guard let baseSignature = try? ECDSASignature(rawRepresentation: signature.rawRepresentation) else {
             // If we can't create a signature, it's not valid.
             return false

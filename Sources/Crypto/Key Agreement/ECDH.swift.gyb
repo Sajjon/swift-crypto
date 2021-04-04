@@ -29,7 +29,7 @@ import Foundation
 // see section `gyb` in `README` for details.
 
 %{
-    NIST_CURVES = ["P256", "P384", "P521"]
+    NIST_CURVES = ["SECP256R1", "P384", "P521"]
     CURVES_FUNC = ["Signing", "KeyAgreement"]
 }%
 % for CURVE in NIST_CURVES:

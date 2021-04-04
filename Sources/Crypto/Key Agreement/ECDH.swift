@@ -28,12 +28,12 @@ import Foundation
 // any edits of this file WILL be overwritten and thus discarded
 // see section `gyb` in `README` for details.
 
-// MARK: - P256 + Signing
-extension P256 {
+// MARK: - SECP256R1 + Signing
+extension SECP256R1 {
     public enum Signing {
     
         public struct PublicKey: NISTECPublicKey {
-            var impl: NISTCurvePublicKeyImpl<P256.CurveDetails>
+            var impl: NISTCurvePublicKeyImpl<SECP256R1.CurveDetails>
 
             public init<D: ContiguousBytes>(rawRepresentation: D) throws {
                 impl = try NISTCurvePublicKeyImpl(rawRepresentation: rawRepresentation)
@@ -61,7 +61,7 @@ extension P256 {
                 self = try .init(x963Representation: parsed.key)
             }
 
-            init(impl: NISTCurvePublicKeyImpl<P256.CurveDetails>) {
+            init(impl: NISTCurvePublicKeyImpl<SECP256R1.CurveDetails>) {
                 self.impl = impl
             }
 
@@ -70,7 +70,7 @@ extension P256 {
             public var x963Representation: Data { impl.x963Representation }
 
             public var derRepresentation: Data {
-                let spki = ASN1.SubjectPublicKeyInfo(algorithmIdentifier: .ecdsaP256, key: Array(self.x963Representation))
+                let spki = ASN1.SubjectPublicKeyInfo(algorithmIdentifier: .ecdsaSECP256R1, key: Array(self.x963Representation))
                 var serializer = ASN1.Serializer()
 
                 // Serializing these keys can't throw
@@ -85,7 +85,7 @@ extension P256 {
         }
 
         public struct PrivateKey: NISTECPrivateKey {
-            let impl: NISTCurvePrivateKeyImpl<P256.CurveDetails>
+            let impl: NISTCurvePrivateKeyImpl<SECP256R1.CurveDetails>
 
             public init(compactRepresentable: Bool = true) {
                 impl = NISTCurvePrivateKeyImpl(compactRepresentable: compactRepresentable)
@@ -129,11 +129,11 @@ extension P256 {
                 }
             }
 
-            init(impl: NISTCurvePrivateKeyImpl<P256.CurveDetails>) {
+            init(impl: NISTCurvePrivateKeyImpl<SECP256R1.CurveDetails>) {
                 self.impl = impl
             }
 
-            public var publicKey: P256.Signing.PublicKey {
+            public var publicKey: SECP256R1.Signing.PublicKey {
                 return PublicKey(impl: impl.publicKey())
             }
 
@@ -141,7 +141,7 @@ extension P256 {
             public var x963Representation: Data { impl.x963Representation }
 
             public var derRepresentation: Data {
-                let pkey = ASN1.PKCS8PrivateKey(algorithm: .ecdsaP256, privateKey: Array(self.rawRepresentation), publicKey: Array(self.publicKey.x963Representation))
+                let pkey = ASN1.PKCS8PrivateKey(algorithm: .ecdsaSECP256R1, privateKey: Array(self.rawRepresentation), publicKey: Array(self.publicKey.x963Representation))
                 var serializer = ASN1.Serializer()
 
                 // Serializing these keys can't throw
@@ -156,12 +156,12 @@ extension P256 {
         }
     }
 }
-// MARK: - P256 + KeyAgreement
-extension P256 {
+// MARK: - SECP256R1 + KeyAgreement
+extension SECP256R1 {
     public enum KeyAgreement {
     
         public struct PublicKey: NISTECPublicKey {
-            var impl: NISTCurvePublicKeyImpl<P256.CurveDetails>
+            var impl: NISTCurvePublicKeyImpl<SECP256R1.CurveDetails>
 
             public init<D: ContiguousBytes>(rawRepresentation: D) throws {
                 impl = try NISTCurvePublicKeyImpl(rawRepresentation: rawRepresentation)
@@ -189,7 +189,7 @@ extension P256 {
                 self = try .init(x963Representation: parsed.key)
             }
 
-            init(impl: NISTCurvePublicKeyImpl<P256.CurveDetails>) {
+            init(impl: NISTCurvePublicKeyImpl<SECP256R1.CurveDetails>) {
                 self.impl = impl
             }
 
@@ -198,7 +198,7 @@ extension P256 {
             public var x963Representation: Data { impl.x963Representation }
 
             public var derRepresentation: Data {
-                let spki = ASN1.SubjectPublicKeyInfo(algorithmIdentifier: .ecdsaP256, key: Array(self.x963Representation))
+                let spki = ASN1.SubjectPublicKeyInfo(algorithmIdentifier: .ecdsaSECP256R1, key: Array(self.x963Representation))
                 var serializer = ASN1.Serializer()
 
                 // Serializing these keys can't throw
@@ -213,7 +213,7 @@ extension P256 {
         }
 
         public struct PrivateKey: NISTECPrivateKey {
-            let impl: NISTCurvePrivateKeyImpl<P256.CurveDetails>
+            let impl: NISTCurvePrivateKeyImpl<SECP256R1.CurveDetails>
 
             public init(compactRepresentable: Bool = true) {
                 impl = NISTCurvePrivateKeyImpl(compactRepresentable: compactRepresentable)
@@ -257,11 +257,11 @@ extension P256 {
                 }
             }
 
-            init(impl: NISTCurvePrivateKeyImpl<P256.CurveDetails>) {
+            init(impl: NISTCurvePrivateKeyImpl<SECP256R1.CurveDetails>) {
                 self.impl = impl
             }
 
-            public var publicKey: P256.KeyAgreement.PublicKey {
+            public var publicKey: SECP256R1.KeyAgreement.PublicKey {
                 return PublicKey(impl: impl.publicKey())
             }
 
@@ -269,7 +269,7 @@ extension P256 {
             public var x963Representation: Data { impl.x963Representation }
 
             public var derRepresentation: Data {
-                let pkey = ASN1.PKCS8PrivateKey(algorithm: .ecdsaP256, privateKey: Array(self.rawRepresentation), publicKey: Array(self.publicKey.x963Representation))
+                let pkey = ASN1.PKCS8PrivateKey(algorithm: .ecdsaSECP256R1, privateKey: Array(self.rawRepresentation), publicKey: Array(self.publicKey.x963Representation))
                 var serializer = ASN1.Serializer()
 
                 // Serializing these keys can't throw
@@ -797,14 +797,14 @@ extension P521 {
     }
 }
 
-// MARK: - P256 + DH
-extension P256.KeyAgreement.PrivateKey: DiffieHellmanKeyAgreement {
+// MARK: - SECP256R1 + DH
+extension SECP256R1.KeyAgreement.PrivateKey: DiffieHellmanKeyAgreement {
     /// Performs a key agreement with provided public key share.
     ///
     /// - Parameter publicKeyShare: The public key to perform the ECDH with.
     /// - Returns: Returns a shared secret
     /// - Throws: An error occurred while computing the shared secret
-    public func sharedSecretFromKeyAgreement(with publicKeyShare: P256.KeyAgreement.PublicKey) throws -> SharedSecret {
+    public func sharedSecretFromKeyAgreement(with publicKeyShare: SECP256R1.KeyAgreement.PublicKey) throws -> SharedSecret {
         #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
         return try self.coreCryptoSharedSecretFromKeyAgreement(with: publicKeyShare)
         #else

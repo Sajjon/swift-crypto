@@ -46,7 +46,7 @@ protocol NISTECPrivateKey: ECPrivateKey where PublicKey: NISTECPublicKey {
 }
 
 /// The NIST P-256 Elliptic Curve.
-public enum P256 { }
+public enum SECP256R1 { }
 
 /// The NIST P-384 Elliptic Curve.
 public enum P384 { }
