@@ -31,7 +31,7 @@ let swiftSettings: [SwiftSetting] = [
 ]
 
 let package = Package(
-    name: "swift-crypto",
+    name: "K1",
     platforms: [
         .macOS(.v10_15),
         .iOS(.v13),
@@ -39,7 +39,7 @@ let package = Package(
         .tvOS(.v13),
     ],
     products: [
-        .library(name: "Crypto", targets: ["Crypto"]),
+        .library(name: "K1", targets: ["K1"]),
         /* This target is used only for symbol mangling. It's added and removed automatically because it emits build warnings. MANGLE_START
             .library(name: "CCryptoBoringSSL", type: .static, targets: ["CCryptoBoringSSL"]),
             MANGLE_END */
@@ -58,9 +58,9 @@ let package = Package(
           ]
         ),
         .target(name: "CCryptoBoringSSLShims", dependencies: ["CCryptoBoringSSL"]),
-        .target(name: "Crypto", dependencies: ["CCryptoBoringSSL", "CCryptoBoringSSLShims"], swiftSettings: swiftSettings),
-        .target(name: "crypto-shasum", dependencies: ["Crypto"]),
-        .testTarget(name: "CryptoTests", dependencies: ["Crypto"], swiftSettings: swiftSettings),
+        .target(name: "K1", dependencies: ["CCryptoBoringSSL", "CCryptoBoringSSLShims"], path: "Sources/Crypto", swiftSettings: swiftSettings),
+        .target(name: "crypto-shasum", dependencies: ["K1"]),
+        .testTarget(name: "K1Tests", dependencies: ["K1"], path: "Tests/CryptoTests", swiftSettings: swiftSettings),
     ],
     cxxLanguageStandard: .cxx11
 )
