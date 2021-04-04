@@ -56,6 +56,9 @@ extension ASN1 {
             self.publicKey = publicKey
             self.algorithm = try algorithm.map { algorithmOID in
                 switch algorithmOID {
+                case ASN1ObjectIdentifier.NamedCurves.secp256k1:
+                    fatalError("secp256k1 is not yet implement and/or not tested")
+                    return .ecdsaSECP256K1
                 case ASN1ObjectIdentifier.NamedCurves.secp256r1:
                     return .ecdsaSECP256R1
                 case ASN1ObjectIdentifier.NamedCurves.secp384r1:
@@ -82,6 +85,9 @@ extension ASN1 {
                 if let algorithm = self.algorithm {
                     let oid: ASN1.ASN1ObjectIdentifier
                     switch algorithm {
+                    case .ecdsaSECP256K1:
+                        oid = ASN1ObjectIdentifier.NamedCurves.secp256k1
+                        fatalError("secp256k1 is not yet implement and/or not tested")
                     case .ecdsaSECP256R1:
                         oid = ASN1ObjectIdentifier.NamedCurves.secp256r1
                     case .ecdsaP384:
