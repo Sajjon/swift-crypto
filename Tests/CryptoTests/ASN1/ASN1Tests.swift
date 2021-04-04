@@ -31,7 +31,7 @@ class ASN1Tests: XCTestCase {
         let result = try orFail { try ASN1.parse(decodedSPKI) }
         let spki = try orFail { try ASN1.SubjectPublicKeyInfo(asn1Encoded: result) }
 
-        XCTAssertEqual(spki.algorithmIdentifier, .ecdsaP256)
+        XCTAssertEqual(spki.algorithmIdentifier, .ecdsaSECP256R1)
         XCTAssertNoThrow(try P256.Signing.PublicKey(x963Representation: spki.key))
         XCTAssertNoThrow(try P256.KeyAgreement.PublicKey(x963Representation: spki.key))
 
@@ -82,7 +82,7 @@ class ASN1Tests: XCTestCase {
         let result = try orFail { try ASN1.parse(decodedPrivateKey) }
         let pkey = try orFail { try ASN1.SEC1PrivateKey(asn1Encoded: result) }
 
-        XCTAssertEqual(pkey.algorithm, .ecdsaP256)
+        XCTAssertEqual(pkey.algorithm, .ecdsaSECP256R1)
         let privateKey = try orFail { try P256.Signing.PrivateKey(rawRepresentation: pkey.privateKey) }
         let publicKey = try orFail { try P256.Signing.PublicKey(x963Representation: pkey.publicKey!) }
         XCTAssertEqual(privateKey.publicKey.rawRepresentation, publicKey.rawRepresentation)
@@ -148,7 +148,7 @@ class ASN1Tests: XCTestCase {
         let result = try orFail { try ASN1.parse(decodedPrivateKey) }
         let pkey = try orFail { try ASN1.PKCS8PrivateKey(asn1Encoded: result) }
 
-        XCTAssertEqual(pkey.algorithm, .ecdsaP256)
+        XCTAssertEqual(pkey.algorithm, .ecdsaSECP256R1)
         XCTAssertNil(pkey.privateKey.algorithm)  // OpenSSL nils this out for some reason
         let privateKey = try orFail { try P256.Signing.PrivateKey(rawRepresentation: pkey.privateKey.privateKey) }
         let publicKey = try orFail { try P256.Signing.PublicKey(x963Representation: pkey.privateKey.publicKey!) }
@@ -615,7 +615,7 @@ O9zxi7HTvuXyQr7QKSBtdC%mHym+WoPsbA==
         try orFail {
             try serializer.appendConstructedNode(identifier: .sequence) { coder in
                 try coder.serialize(0)
-                try coder.serialize(ASN1.RFC5480AlgorithmIdentifier.ecdsaP256)
+                try coder.serialize(ASN1.RFC5480AlgorithmIdentifier.ecdsaSECP256R1)
 
                 var subCoder = ASN1.Serializer()
                 try subCoder.serialize(ASN1.SEC1PrivateKey(privateKey: [], algorithm: .ecdsaP384, publicKey: []))  // We won't notice these are empty either, but we will notice the algo mismatch.

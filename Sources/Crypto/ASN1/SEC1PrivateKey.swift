@@ -57,7 +57,7 @@ extension ASN1 {
             self.algorithm = try algorithm.map { algorithmOID in
                 switch algorithmOID {
                 case ASN1ObjectIdentifier.NamedCurves.secp256r1:
-                    return .ecdsaP256
+                    return .ecdsaSECP256R1
                 case ASN1ObjectIdentifier.NamedCurves.secp384r1:
                     return .ecdsaP384
                 case ASN1ObjectIdentifier.NamedCurves.secp521r1:
@@ -82,7 +82,7 @@ extension ASN1 {
                 if let algorithm = self.algorithm {
                     let oid: ASN1.ASN1ObjectIdentifier
                     switch algorithm {
-                    case .ecdsaP256:
+                    case .ecdsaSECP256R1:
                         oid = ASN1ObjectIdentifier.NamedCurves.secp256r1
                     case .ecdsaP384:
                         oid = ASN1ObjectIdentifier.NamedCurves.secp384r1

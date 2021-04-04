@@ -56,7 +56,7 @@ extension ASN1 {
     }
 
     enum RFC5480AlgorithmIdentifier: ASN1Parseable, ASN1Serializable {
-        case ecdsaP256
+        case ecdsaSECP256R1
         case ecdsaP384
         case ecdsaP521
 
@@ -86,7 +86,7 @@ extension ASN1 {
 
                 switch curveNameOID {
                 case ASN1ObjectIdentifier.NamedCurves.secp256r1:
-                    return .ecdsaP256
+                    return .ecdsaSECP256R1
                 case ASN1ObjectIdentifier.NamedCurves.secp384r1:
                     return .ecdsaP384
                 case ASN1ObjectIdentifier.NamedCurves.secp521r1:
@@ -102,7 +102,7 @@ extension ASN1 {
                 try coder.serialize(ASN1ObjectIdentifier.AlgorithmIdentifier.idEcPublicKey)
 
                 switch self {
-                case .ecdsaP256:
+                case .ecdsaSECP256R1:
                     try coder.serialize(ASN1ObjectIdentifier.NamedCurves.secp256r1)
                 case .ecdsaP384:
                     try coder.serialize(ASN1ObjectIdentifier.NamedCurves.secp384r1)
