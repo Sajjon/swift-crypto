@@ -20,7 +20,7 @@ import XCTest
 #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
 @testable import CryptoKit
 #else
-@testable import Crypto
+@testable import K1
 #endif
 
 enum ECDHTestErrors: Error {

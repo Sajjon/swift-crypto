@@ -55,7 +55,7 @@ cat > "$module_switcher" <<"EOF"
 
 SwiftCrypto is a SwiftCrypto package.
 
-To get started with SwiftCrypto, [`import Crypto`](../Crypto/index.html).
+To get started with SwiftCrypto, [`import K1`](../Crypto/index.html).
 EOF
 
 # run jazzy

@@ -15,11 +15,11 @@ import Foundation
 import XCTest
 
 #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && CRYPTO_IN_SWIFTPM && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
-import Crypto
+import K1
 #elseif (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
 import CryptoKit
 #else
-import Crypto
+import K1
 #endif
 
 class ChaChaPolyTests: XCTestCase {

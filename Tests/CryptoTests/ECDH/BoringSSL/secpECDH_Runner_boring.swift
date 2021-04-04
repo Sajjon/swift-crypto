@@ -21,7 +21,7 @@ import XCTest
 @testable import CryptoKit
 #else
 @_implementationOnly import CCryptoBoringSSL
-@testable import Crypto
+@testable import K1
 #endif
 
 extension NISTECDHTests {

@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 import Foundation
-import Crypto
+import K1
 
 let help = """
 Usage: crypto-shasum [OPTION]... [FILE]...
