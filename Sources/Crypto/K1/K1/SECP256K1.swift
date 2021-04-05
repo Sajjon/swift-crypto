@@ -7,11 +7,12 @@
 
 import Foundation
 
-#if (!CRYPTO_IN_SWIFTPM || CRYPTO_IN_SWIFTPM_FORCE_BUILD_API)
-
+#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && CRYPTO_IN_SWIFTPM && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
+// NOOP
+#else
 public enum SECP256K1 {}
 
-public extension ASN1.ASN1ObjectIdentifier.NamedCurves {
+extension ASN1.ASN1ObjectIdentifier.NamedCurves {
     
     /// `secp256k1`, aka `"Bitcoin curve"`, aka `ansip256k1`
     /// http://oid-info.com/get/1.3.132.0.10

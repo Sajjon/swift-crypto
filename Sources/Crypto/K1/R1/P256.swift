@@ -7,6 +7,8 @@
 
 import Foundation
 
-#if (!CRYPTO_IN_SWIFTPM || CRYPTO_IN_SWIFTPM_FORCE_BUILD_API)
+#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && CRYPTO_IN_SWIFTPM && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
+// NOOP
+#else
 public typealias P256 = SECP256R1
 #endif

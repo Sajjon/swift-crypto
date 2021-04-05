@@ -598,15 +598,13 @@ O9zxi7HTvuXyQr7QKSBtdC%mHym+WoPsbA==
         }
     }
 
-    func testSEC1PrivateKeyUnsupportedKeyType() throws {
+    func testBitcoinCurveIdentifierCanBeDecodedFromAsn1() throws {
         // This is an EC SPKI object with an unsupported named curve.
         let b64SEC1 = "MHQCAQEEINIuVmNF7g1wNCJWXDpgL+09jATtaS1n0SxqqQneHi+woAcGBSuBBAAKoUQDQgAEB7v/p7gvuV0aDx02EF6a+pr563p+FzRJXI+COWHdr+XRcjg6vEi4n3Jj7ksmEg4t1x6E1xFyTvF3eV/B/XVXbw=="
         let decodedSEC1 = Array(Data(base64Encoded: b64SEC1)!)
 
         let parsed = try orFail { try ASN1.parse(decodedSEC1) }
-        XCTAssertThrowsError(try ASN1.SEC1PrivateKey(asn1Encoded: parsed)) { error in
-            XCTAssertEqual(error as? CryptoKitASN1Error, .invalidASN1Object)
-        }
+        XCTAssertEqual(try ASN1.SEC1PrivateKey(asn1Encoded: parsed).algorithm, .ecdsaSECP256K1)
     }
 
     func testPKCS8KeyWithNonMatchingKeyOIDS() throws {

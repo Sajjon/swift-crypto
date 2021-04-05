@@ -56,6 +56,7 @@ extension ASN1 {
     }
 
     enum RFC5480AlgorithmIdentifier: ASN1Parseable, ASN1Serializable {
+        case ecdsaSECP256K1
         case ecdsaSECP256R1
         case ecdsaP384
         case ecdsaP521
@@ -102,6 +103,9 @@ extension ASN1 {
                 try coder.serialize(ASN1ObjectIdentifier.AlgorithmIdentifier.idEcPublicKey)
 
                 switch self {
+                case .ecdsaSECP256K1:
+                    fatalError("secp256k1 is not yet implement and/or not tested")
+                    try coder.serialize(ASN1ObjectIdentifier.NamedCurves.secp256k1)
                 case .ecdsaSECP256R1:
                     try coder.serialize(ASN1ObjectIdentifier.NamedCurves.secp256r1)
                 case .ecdsaP384:

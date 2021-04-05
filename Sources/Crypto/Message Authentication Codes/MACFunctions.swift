@@ -21,7 +21,7 @@ protocol MACAlgorithm {
     #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
     associatedtype MAC: CryptoKit.MessageAuthenticationCode
     #else
-    associatedtype MAC: Crypto.MessageAuthenticationCode
+    associatedtype MAC: K1.MessageAuthenticationCode
     #endif
 
     /// Initializes the MAC Algorithm

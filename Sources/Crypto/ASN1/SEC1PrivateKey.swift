@@ -33,6 +33,8 @@ extension ASN1 {
         var publicKey: ASN1.ASN1BitString?
 
         init(asn1Encoded rootNode: ASN1.ASN1Node) throws {
+            
+            
             self = try ASN1.sequence(rootNode) { nodes in
                 let version = try Int(asn1Encoded: &nodes)
                 guard 1 == version else {
@@ -57,7 +59,7 @@ extension ASN1 {
             self.algorithm = try algorithm.map { algorithmOID in
                 switch algorithmOID {
                 case ASN1ObjectIdentifier.NamedCurves.secp256k1:
-                    fatalError("secp256k1 is not yet implement and/or not tested")
+                    print("WARNING ⚠️ secp256k1 is not yet implement and/or not tested")
                     return .ecdsaSECP256K1
                 case ASN1ObjectIdentifier.NamedCurves.secp256r1:
                     return .ecdsaSECP256R1

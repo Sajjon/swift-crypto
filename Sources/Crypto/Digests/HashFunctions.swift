@@ -29,7 +29,7 @@ public protocol HashFunction {
     #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
     associatedtype Digest: CryptoKit.Digest
     #else
-    associatedtype Digest: Crypto.Digest
+    associatedtype Digest: K1.Digest
     #endif
 
     /// Initializes the hasher instance.
