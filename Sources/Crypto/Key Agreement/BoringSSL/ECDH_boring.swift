@@ -36,4 +36,12 @@ extension P521.KeyAgreement.PrivateKey {
         return SharedSecret(ss: key)
     }
 }
+
+extension SECP256K1.KeyAgreement.PrivateKey {
+    internal func openSSLSharedSecretFromKeyAgreement(with publicKeyShare: SECP256K1.KeyAgreement.PublicKey) throws -> SharedSecret {
+//        let key = try self.impl.key.keyExchange(publicKey: publicKeyShare.impl.key)
+//        return SharedSecret(ss: key)
+        fatalError()
+    }
+}
 #endif // (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && CRYPTO_IN_SWIFTPM && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API

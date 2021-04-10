@@ -61,6 +61,17 @@ extension P521 {
     }
 }
 
+extension SECP256K1 {
+    @usableFromInline
+    struct CurveDetails: OpenSSLSupportedNISTCurve {
+        @inlinable
+        static var group: BoringSSLEllipticCurveGroup {
+//            return try! BoringSSLEllipticCurveGroup(.p521)
+            fatalError()
+        }
+    }
+}
+
 @usableFromInline
 struct OpenSSLNISTCurvePrivateKeyImpl<Curve: OpenSSLSupportedNISTCurve> {
     @usableFromInline
