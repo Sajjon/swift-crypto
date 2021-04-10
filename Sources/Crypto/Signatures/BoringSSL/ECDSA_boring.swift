@@ -66,6 +66,15 @@ extension SECP256R1.Signing.PrivateKey {
     }
 }
 
+extension SECP256K1.Signing.PrivateKey {
+    func openSSLSignature<D: Digest>(for digest: D) throws -> SECP256K1.Signing.ECDSASignature {
+//        let baseSignature = try self.impl.key.sign(digest: digest)
+//        return try .init(rawRepresentation: Data(rawSignature: baseSignature, over: SECP256R1.CurveDetails.self))
+        fatalError()
+    }
+}
+
+
 extension SECP256R1.Signing.PublicKey {
     func openSSLIsValidSignature<D: Digest>(_ signature: SECP256R1.Signing.ECDSASignature, for digest: D) -> Bool {
         guard let baseSignature = try? ECDSASignature(rawRepresentation: signature.rawRepresentation) else {
@@ -102,6 +111,18 @@ extension P384.Signing.PublicKey {
         }
 
         return self.impl.key.isValidSignature(baseSignature, for: digest)
+    }
+}
+
+extension SECP256K1.Signing.PublicKey {
+    func openSSLIsValidSignature<D: Digest>(_ signature: SECP256K1.Signing.ECDSASignature, for digest: D) -> Bool {
+//        guard let baseSignature = try? ECDSASignature(rawRepresentation: signature.rawRepresentation) else {
+//            // If we can't create a signature, it's not valid.
+//            return false
+//        }
+//
+//        return self.impl.key.isValidSignature(baseSignature, for: digest)
+        fatalError()
     }
 }
 

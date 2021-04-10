@@ -18,13 +18,17 @@
 typealias NISTCurvePublicKeyImpl = CoreCryptoNISTCurvePublicKeyImpl
 typealias NISTCurvePrivateKeyImpl = CoreCryptoNISTCurvePrivateKeyImpl
 
-typealias SECGCurvePublicKeyImpl = Never
-typealias SECGCurvePrivateKeyImpl = Never
+// TODO change ths
+typealias SECGCurvePublicKeyImpl = CoreCryptoNISTCurvePublicKeyImpl
+// TODO change ths
+typealias SECGCurvePrivateKeyImpl = CoreCryptoNISTCurvePrivateKeyImpl
 #else
 typealias NISTCurvePublicKeyImpl = OpenSSLNISTCurvePublicKeyImpl
 typealias NISTCurvePrivateKeyImpl = OpenSSLNISTCurvePrivateKeyImpl
 
+// TODO change ths
 typealias SECGCurvePublicKeyImpl = OpenSSLNISTCurvePublicKeyImpl
+// TODO change ths
 typealias SECGCurvePrivateKeyImpl = OpenSSLNISTCurvePrivateKeyImpl
 #endif
 
