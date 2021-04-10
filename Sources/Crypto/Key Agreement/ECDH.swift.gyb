@@ -30,6 +30,7 @@ import Foundation
 
 %{
     NIST_CURVES = ["SECP256R1", "P384", "P521"]
+    NIST_OR_SECG_PREFIX = "NIST"
     CURVES_FUNC = ["Signing", "KeyAgreement"]
 }%
 % for CURVE in NIST_CURVES:
@@ -38,7 +39,7 @@ import Foundation
 extension ${CURVE} {
     public enum ${FUNC} {
     
-        public struct PublicKey: NISTECPublicKey {
+        public struct PublicKey: ${NIST_OR_SECG_PREFIX}ECPublicKey {
             var impl: NISTCurvePublicKeyImpl<${CURVE}.CurveDetails>
 
             public init<D: ContiguousBytes>(rawRepresentation: D) throws {

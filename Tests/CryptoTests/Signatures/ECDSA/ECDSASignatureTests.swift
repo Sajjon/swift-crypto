@@ -148,40 +148,25 @@ class SignatureTests: XCTestCase {
         }
     }
     
-    func testGroup<C: NISTSigning, HF: HashFunction>(group: ECDSATestGroup, curve: C.Type, hashFunction: HF.Type, file: StaticString = #file, line: UInt = #line) throws where C.ECDSASignature == C.PublicKey.Signature {
-        let keyBytes = try orFail(file: file, line: line) { try Array(hexString: group.key.uncompressed) }
-        let key = try orFail(file: file, line: line) { try C.PublicKey(x963Representation: keyBytes) }
-
+    func testGroup<C: NISTSigning, HF: HashFunction>(
+        group: ECDSATestGroup,
+        curve: C.Type,
+        hashFunction: HF.Type,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) throws
+    where C.ECDSASignature == C.PublicKey.Signature
+    {
+        
         for testVector in group.tests {
-            if testVector.msg == "" {
-                continue
-            }
-
-            var isValid = false
-
-            do {
-                let sig = try Data(hexString: testVector.sig)
-                let msg = try Data(hexString: testVector.msg)
-
-                let digest = HF.hash(data: msg)
-
-                let signature = try C.ECDSASignature(derRepresentation: sig)
-
-                isValid = key.isValidSignature(signature, for: digest)
-            } catch {
-                XCTAssert(testVector.result == "invalid" || testVector.result == "acceptable", "Test ID: \(testVector.tcId) is valid, but failed \(error.localizedDescription).", file: file, line: line)
-                continue
-            }
-
-            switch testVector.result {
-            case "valid": XCTAssert(isValid, "Test vector is valid, but is rejected \(testVector.tcId)", file: file, line: line)
-            case "acceptable": do {
-                XCTAssert(isValid, file: file, line: line)
-                }
-            case "invalid": XCTAssert(!isValid, "Test ID: \(testVector.tcId) is valid, but failed.", file: file, line: line)
-            default:
-                XCTFail("Unhandled test vector", file: file, line: line)
-            }
+            try doTestVectorAndKey(
+                vector: testVector,
+                key: group.key,
+                curve: curve,
+                hashFunction: hashFunction,
+                file: file,
+                line: line
+            )
         }
     }
 
@@ -340,6 +325,68 @@ class SignatureTests: XCTestCase {
         XCTAssertFalse(anotherKey.publicKey.isValidSignature(try .init(derRepresentation: discontiguousContiguous), for: discontiguousData))
         XCTAssertFalse(anotherKey.publicKey.isValidSignature(try .init(derRepresentation: contiguousDiscontiguous), for: discontiguousData))
         XCTAssertFalse(anotherKey.publicKey.isValidSignature(try .init(derRepresentation: discontiguousDiscontiguous), for: discontiguousData))
+    }
+}
+
+extension XCTestCase {
+    func doTestVectorAndKey<C: NISTSigning, HF: HashFunction>(
+        vector testVector: SignatureTestVector,
+        key: ECDSAKey,
+        curve: C.Type,
+        hashFunction: HF.Type,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) throws where C.ECDSASignature == C.PublicKey.Signature {
+        let keyBytes = try orFail(file: file, line: line) { try Array(hexString: key.uncompressed) }
+        let key = try orFail(file: file, line: line) { try C.PublicKey(x963Representation: keyBytes) }
+        try doTestVector(
+            vector: testVector,
+            publicKey: key,
+            curve: curve,
+            hashFunction: hashFunction,
+            file: file,
+            line: line
+        )
+    }
+    
+    func doTestVector<C: NISTSigning, HF: HashFunction>(
+        vector testVector: SignatureTestVector,
+        publicKey key: C.PublicKey,
+        curve: C.Type,
+        hashFunction: HF.Type,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) throws where C.ECDSASignature == C.PublicKey.Signature {
+        
+        if testVector.msg == "" {
+            return
+        }
+        
+        var isValid = false
+        
+        do {
+            let sig = try Data(hexString: testVector.sig)
+            let msg = try Data(hexString: testVector.msg)
+            
+            let digest = HF.hash(data: msg)
+            
+            let signature = try C.ECDSASignature(derRepresentation: sig)
+            
+            isValid = key.isValidSignature(signature, for: digest)
+        } catch {
+            XCTAssert(testVector.result == "invalid" || testVector.result == "acceptable", "Test ID: \(testVector.tcId) is valid, but failed \(error.localizedDescription).", file: file, line: line)
+            return
+        }
+        
+        switch testVector.result {
+        case "valid": XCTAssert(isValid, "Test vector is valid, but is rejected \(testVector.tcId)", file: file, line: line)
+        case "acceptable": do {
+            XCTAssert(isValid, file: file, line: line)
+        }
+        case "invalid": XCTAssert(!isValid, "Test ID: \(testVector.tcId) is valid, but failed.", file: file, line: line)
+        default:
+            XCTFail("Unhandled test vector", file: file, line: line)
+        }
     }
 }
 #endif // (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && CRYPTO_IN_SWIFTPM

@@ -32,7 +32,7 @@ protocol ECPrivateKey {
     var publicKey: PublicKey { get }
 }
 
-protocol NISTECPublicKey: ECPublicKey {
+protocol EllipticCurvePublicKey: ECPublicKey {
     init<Bytes: ContiguousBytes>(compactRepresentation: Bytes) throws
     init<Bytes: ContiguousBytes>(x963Representation: Bytes) throws
     
@@ -40,10 +40,18 @@ protocol NISTECPublicKey: ECPublicKey {
     var x963Representation: Data { get }
 }
 
-protocol NISTECPrivateKey: ECPrivateKey where PublicKey: NISTECPublicKey {
+protocol NISTECPublicKey: EllipticCurvePublicKey {}
+protocol SECGECPublicKey: EllipticCurvePublicKey {}
+
+
+protocol EllipticCurvePrivateKey: ECPrivateKey where PublicKey: EllipticCurvePublicKey {
     init <Bytes: ContiguousBytes>(rawRepresentation: Bytes) throws
     var rawRepresentation: Data { get }
 }
+
+protocol NISTECPrivateKey: EllipticCurvePrivateKey where PublicKey: NISTECPublicKey {}
+
+protocol SECGECPrivateKey: EllipticCurvePrivateKey where PublicKey: SECGECPublicKey {}
 
 /// The NIST P-256 Elliptic Curve.
 public enum SECP256R1 { }

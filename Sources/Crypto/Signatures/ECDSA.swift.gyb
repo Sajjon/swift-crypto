@@ -19,23 +19,67 @@ import Foundation
 // any edits of this file WILL be overwritten and thus discarded
 // see section `gyb` in `README` for details.
 %{
-    NIST_CURVES_AND_HF = [{"curve": "P256", "hf": "SHA256"},{"curve": "P384", "hf": "SHA384"},{"curve": "P521", "hf": "SHA512"}]
+    NIST_CURVES_AND_HF = [{"curve": "SECP256R1", "hf": "SHA256"},{"curve": "P384", "hf": "SHA384"},{"curve": "P521", "hf": "SHA512"}]
+    SECG_CURVES_AND_HF = [{"curve": "SECP256K1", "hf": "SHA256"}]
+    EC_CURVES_AND_HF = NIST_CURVES_AND_HF + SECG_CURVES_AND_HF
 }%
 
-protocol NISTECDSASignature {
+protocol ECDSASignatureProtocol {
     init<D: DataProtocol>(rawRepresentation: D) throws
     init<D: DataProtocol>(derRepresentation: D) throws
     var derRepresentation: Data { get }
     var rawRepresentation: Data { get }
 }
 
-protocol NISTSigning {
-    associatedtype PublicKey: NISTECPublicKey & DataValidator & DigestValidator
-    associatedtype PrivateKey: NISTECPrivateKey & Signer
-    associatedtype ECDSASignature: NISTECDSASignature
+protocol NISTECDSASignature: ECDSASignatureProtocol {}
+protocol SECGECDSASignature: ECDSASignatureProtocol {}
+
+protocol ECSigning {
+    associatedtype PublicKey: EllipticCurvePublicKey & DataValidator & DigestValidator
+    associatedtype PrivateKey: EllipticCurvePrivateKey & Signer
+    associatedtype ECDSASignature: ECDSASignatureProtocol
 }
 
+protocol NISTSigning: ECSigning where PublicKey: NISTECPublicKey, PrivateKey: NISTECPrivateKey, ECDSASignature: NISTECDSASignature {}
+
+protocol SECGSigning: ECSigning where PublicKey: SECGECPublicKey, PrivateKey: SECGECPrivateKey, ECDSASignature: SECGECDSASignature {}
+
+
+
+// NIST
 % for CURVE_AND_HF in NIST_CURVES_AND_HF:
+%{
+    CURVE = CURVE_AND_HF["curve"]
+    HF    = CURVE_AND_HF["hf"]
+}%
+
+extension ${CURVE}.Signing.ECDSASignature: NISTECDSASignature {}
+// extension ${CURVE}.Signing.PublicKey: NISTECPublicKey {}
+// extension ${CURVE}.Signing.PrivateKey: NISTECPrivateKey {}
+extension ${CURVE}.Signing: NISTSigning {}
+
+% end
+
+
+// SECG
+% for CURVE_AND_HF in SECG_CURVES_AND_HF:
+%{
+    CURVE = CURVE_AND_HF["curve"]
+    HF    = CURVE_AND_HF["hf"]
+}%
+
+// TODO
+// extension ${CURVE}.Signing.ECDSASignature: SECGECDSASignature {}
+// extension ${CURVE}.Signing.PublicKey: SECGECPublicKey {}
+// extension ${CURVE}.Signing.PrivateKey: SECGECPrivateKey {}
+// extension ${CURVE}.Signing: SECGSigning {}
+
+% end
+
+
+
+
+% for CURVE_AND_HF in EC_CURVES_AND_HF:
 %{
     CURVE = CURVE_AND_HF["curve"]
     HF    = CURVE_AND_HF["hf"]
@@ -43,7 +87,7 @@ protocol NISTSigning {
 // MARK: - ${CURVE} + Signing
 /// An ECDSA (Elliptic Curve Digital Signature Algorithm) Signature
 extension ${CURVE}.Signing {
-    public struct ECDSASignature: ContiguousBytes, NISTECDSASignature {
+    public struct ECDSASignature: ContiguousBytes, ECDSASignatureProtocol {
         /// Returns the raw signature.
         /// The raw signature format for ECDSA is r || s
         public var rawRepresentation: Data
@@ -116,7 +160,7 @@ extension ${CURVE}.Signing {
     }
 }
 
-extension ${CURVE}.Signing: NISTSigning {}
+extension ${CURVE}.Signing: ECSigning {}
 
 // MARK: - ${CURVE} + PrivateKey
 extension ${CURVE}.Signing.PrivateKey: DigestSigner {
