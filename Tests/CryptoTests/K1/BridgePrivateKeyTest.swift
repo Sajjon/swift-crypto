@@ -97,7 +97,7 @@ final class BridgePrivateKeyTests: XCTestCase {
         )
         
         try orFail {
-//            XCTFail("uncomment block below")
+            XCTFail("uncomment block below")
 //            try doTestVectorAndKey(
 //                vector: vector,
 //                key: key,

@@ -89,7 +89,7 @@ extension ASN1 {
                     switch algorithm {
                     case .ecdsaSECP256K1:
                         oid = ASN1ObjectIdentifier.NamedCurves.secp256k1
-                        fatalError("secp256k1 is not yet implement and/or not tested")
+                        todoK1()
                     case .ecdsaSECP256R1:
                         oid = ASN1ObjectIdentifier.NamedCurves.secp256r1
                     case .ecdsaP384:

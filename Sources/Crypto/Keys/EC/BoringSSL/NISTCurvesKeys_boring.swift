@@ -67,7 +67,7 @@ extension SECP256K1 {
         @inlinable
         static var group: BoringSSLEllipticCurveGroup {
 //            return try! BoringSSLEllipticCurveGroup(.p521)
-            fatalError()
+            todoK1()
         }
     }
 }

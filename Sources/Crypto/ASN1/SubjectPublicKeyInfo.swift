@@ -104,7 +104,7 @@ extension ASN1 {
 
                 switch self {
                 case .ecdsaSECP256K1:
-                    fatalError("secp256k1 is not yet implement and/or not tested")
+                    todoK1()
                     try coder.serialize(ASN1ObjectIdentifier.NamedCurves.secp256k1)
                 case .ecdsaSECP256R1:
                     try coder.serialize(ASN1ObjectIdentifier.NamedCurves.secp256r1)

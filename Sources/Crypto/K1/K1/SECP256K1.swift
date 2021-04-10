@@ -19,3 +19,12 @@ extension ASN1.ASN1ObjectIdentifier.NamedCurves {
     static let secp256k1: ASN1.ASN1ObjectIdentifier = [1, 3, 132, 0, 10]
 }
 #endif
+
+public func todoK1(
+    _ message: String = "",
+    file: StaticString = #file,
+    line: UInt = #line
+) -> Never {
+    let messageOrEmpty = message.map({ m in " (\(m))" })
+    fatalError("Implement support for secp256k1 here\(messageOrEmpty): line: #\(line) in file: \(file)")
+}
