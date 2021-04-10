@@ -17,9 +17,15 @@
 #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
 typealias NISTCurvePublicKeyImpl = CoreCryptoNISTCurvePublicKeyImpl
 typealias NISTCurvePrivateKeyImpl = CoreCryptoNISTCurvePrivateKeyImpl
+
+typealias SECGCurvePublicKeyImpl = Never
+typealias SECGCurvePrivateKeyImpl = Never
 #else
 typealias NISTCurvePublicKeyImpl = OpenSSLNISTCurvePublicKeyImpl
 typealias NISTCurvePrivateKeyImpl = OpenSSLNISTCurvePrivateKeyImpl
+
+typealias SECGCurvePublicKeyImpl = OpenSSLNISTCurvePublicKeyImpl
+typealias SECGCurvePrivateKeyImpl = OpenSSLNISTCurvePrivateKeyImpl
 #endif
 
 import Foundation
@@ -796,6 +802,262 @@ extension P521 {
         }
     }
 }
+// MARK: - SECP256K1 + Signing
+extension SECP256K1 {
+    public enum Signing {
+    
+        public struct PublicKey: SECGECPublicKey {
+            var impl: SECGCurvePublicKeyImpl<SECP256K1.CurveDetails>
+
+            public init<D: ContiguousBytes>(rawRepresentation: D) throws {
+                impl = try SECGCurvePublicKeyImpl(rawRepresentation: rawRepresentation)
+            }
+
+            public init<Bytes: ContiguousBytes>(compactRepresentation: Bytes) throws {
+                impl = try SECGCurvePublicKeyImpl(compactRepresentation: compactRepresentation)
+            }
+
+            public init<Bytes: ContiguousBytes>(x963Representation: Bytes) throws {
+                impl = try SECGCurvePublicKeyImpl(x963Representation: x963Representation)
+            }
+
+            public init(pemRepresentation: String) throws {
+                let pem = try ASN1.PEMDocument(pemString: pemRepresentation)
+                guard pem.type == "PUBLIC KEY" else {
+                    throw CryptoKitASN1Error.invalidPEMDocument
+                }
+                self = try .init(derRepresentation: pem.derBytes)
+            }
+
+            public init<Bytes: RandomAccessCollection>(derRepresentation: Bytes) throws where Bytes.Element == UInt8 {
+                let bytes = Array(derRepresentation)
+                let parsed = try ASN1.SubjectPublicKeyInfo(asn1Encoded: bytes)
+                self = try .init(x963Representation: parsed.key)
+            }
+
+            init(impl: SECGCurvePublicKeyImpl<SECP256K1.CurveDetails>) {
+                self.impl = impl
+            }
+
+            public var compactRepresentation: Data? { impl.compactRepresentation }
+            public var rawRepresentation: Data { impl.rawRepresentation }
+            public var x963Representation: Data { impl.x963Representation }
+
+            public var derRepresentation: Data {
+                let spki = ASN1.SubjectPublicKeyInfo(algorithmIdentifier: .ecdsaSECP256K1, key: Array(self.x963Representation))
+                var serializer = ASN1.Serializer()
+
+                // Serializing these keys can't throw
+                try! serializer.serialize(spki)
+                return Data(serializer.serializedBytes)
+            }
+
+            public var pemRepresentation: String {
+                let pemDocument = ASN1.PEMDocument(type: "PUBLIC KEY", derBytes: self.derRepresentation)
+                return pemDocument.pemString
+            }
+        }
+
+        public struct PrivateKey: SECGECPrivateKey {
+            let impl: SECGCurvePrivateKeyImpl<SECP256K1.CurveDetails>
+
+            public init(compactRepresentable: Bool = true) {
+                impl = SECGCurvePrivateKeyImpl(compactRepresentable: compactRepresentable)
+            }
+
+            public init<Bytes: ContiguousBytes>(x963Representation: Bytes) throws {
+                impl = try SECGCurvePrivateKeyImpl(x963: x963Representation)
+            }
+
+            public init<Bytes: ContiguousBytes>(rawRepresentation: Bytes) throws {
+                impl = try SECGCurvePrivateKeyImpl(data: rawRepresentation)
+            }
+
+            public init(pemRepresentation: String) throws {
+                let pem = try ASN1.PEMDocument(pemString: pemRepresentation)
+
+                switch pem.type {
+                case "EC PRIVATE KEY":
+                    let parsed = try ASN1.SEC1PrivateKey(asn1Encoded: Array(pem.derBytes))
+                    self = try .init(rawRepresentation: parsed.privateKey)
+                case "PRIVATE KEY":
+                    let parsed = try ASN1.PKCS8PrivateKey(asn1Encoded: Array(pem.derBytes))
+                    self = try .init(rawRepresentation: parsed.privateKey.privateKey)
+                default:
+                    throw CryptoKitASN1Error.invalidPEMDocument
+                }
+            }
+
+            public init<Bytes: RandomAccessCollection>(derRepresentation: Bytes) throws where Bytes.Element == UInt8 {
+                let bytes = Array(derRepresentation)
+
+                // We have to try to parse this twice because we have no informaton about what kind of key this is.
+                // We try with PKCS#8 first, and then fall back to SEC.1.
+
+                do {
+                    let key = try ASN1.PKCS8PrivateKey(asn1Encoded: bytes)
+                    self = try .init(rawRepresentation: key.privateKey.privateKey)
+                } catch {
+                    let key = try ASN1.SEC1PrivateKey(asn1Encoded: bytes)
+                    self = try .init(rawRepresentation: key.privateKey)
+                }
+            }
+
+            init(impl: SECGCurvePrivateKeyImpl<SECP256K1.CurveDetails>) {
+                self.impl = impl
+            }
+
+            public var publicKey: SECP256K1.Signing.PublicKey {
+                return PublicKey(impl: impl.publicKey())
+            }
+
+            public var rawRepresentation: Data { impl.rawRepresentation }
+            public var x963Representation: Data { impl.x963Representation }
+
+            public var derRepresentation: Data {
+                let pkey = ASN1.PKCS8PrivateKey(algorithm: .ecdsaSECP256K1, privateKey: Array(self.rawRepresentation), publicKey: Array(self.publicKey.x963Representation))
+                var serializer = ASN1.Serializer()
+
+                // Serializing these keys can't throw
+                try! serializer.serialize(pkey)
+                return Data(serializer.serializedBytes)
+            }
+
+            public var pemRepresentation: String {
+                let pemDocument = ASN1.PEMDocument(type: "PRIVATE KEY", derBytes: self.derRepresentation)
+                return pemDocument.pemString
+            }
+        }
+    }
+}
+// MARK: - SECP256K1 + KeyAgreement
+extension SECP256K1 {
+    public enum KeyAgreement {
+    
+        public struct PublicKey: SECGECPublicKey {
+            var impl: SECGCurvePublicKeyImpl<SECP256K1.CurveDetails>
+
+            public init<D: ContiguousBytes>(rawRepresentation: D) throws {
+                impl = try SECGCurvePublicKeyImpl(rawRepresentation: rawRepresentation)
+            }
+
+            public init<Bytes: ContiguousBytes>(compactRepresentation: Bytes) throws {
+                impl = try SECGCurvePublicKeyImpl(compactRepresentation: compactRepresentation)
+            }
+
+            public init<Bytes: ContiguousBytes>(x963Representation: Bytes) throws {
+                impl = try SECGCurvePublicKeyImpl(x963Representation: x963Representation)
+            }
+
+            public init(pemRepresentation: String) throws {
+                let pem = try ASN1.PEMDocument(pemString: pemRepresentation)
+                guard pem.type == "PUBLIC KEY" else {
+                    throw CryptoKitASN1Error.invalidPEMDocument
+                }
+                self = try .init(derRepresentation: pem.derBytes)
+            }
+
+            public init<Bytes: RandomAccessCollection>(derRepresentation: Bytes) throws where Bytes.Element == UInt8 {
+                let bytes = Array(derRepresentation)
+                let parsed = try ASN1.SubjectPublicKeyInfo(asn1Encoded: bytes)
+                self = try .init(x963Representation: parsed.key)
+            }
+
+            init(impl: SECGCurvePublicKeyImpl<SECP256K1.CurveDetails>) {
+                self.impl = impl
+            }
+
+            public var compactRepresentation: Data? { impl.compactRepresentation }
+            public var rawRepresentation: Data { impl.rawRepresentation }
+            public var x963Representation: Data { impl.x963Representation }
+
+            public var derRepresentation: Data {
+                let spki = ASN1.SubjectPublicKeyInfo(algorithmIdentifier: .ecdsaSECP256K1, key: Array(self.x963Representation))
+                var serializer = ASN1.Serializer()
+
+                // Serializing these keys can't throw
+                try! serializer.serialize(spki)
+                return Data(serializer.serializedBytes)
+            }
+
+            public var pemRepresentation: String {
+                let pemDocument = ASN1.PEMDocument(type: "PUBLIC KEY", derBytes: self.derRepresentation)
+                return pemDocument.pemString
+            }
+        }
+
+        public struct PrivateKey: SECGECPrivateKey {
+            let impl: SECGCurvePrivateKeyImpl<SECP256K1.CurveDetails>
+
+            public init(compactRepresentable: Bool = true) {
+                impl = SECGCurvePrivateKeyImpl(compactRepresentable: compactRepresentable)
+            }
+
+            public init<Bytes: ContiguousBytes>(x963Representation: Bytes) throws {
+                impl = try SECGCurvePrivateKeyImpl(x963: x963Representation)
+            }
+
+            public init<Bytes: ContiguousBytes>(rawRepresentation: Bytes) throws {
+                impl = try SECGCurvePrivateKeyImpl(data: rawRepresentation)
+            }
+
+            public init(pemRepresentation: String) throws {
+                let pem = try ASN1.PEMDocument(pemString: pemRepresentation)
+
+                switch pem.type {
+                case "EC PRIVATE KEY":
+                    let parsed = try ASN1.SEC1PrivateKey(asn1Encoded: Array(pem.derBytes))
+                    self = try .init(rawRepresentation: parsed.privateKey)
+                case "PRIVATE KEY":
+                    let parsed = try ASN1.PKCS8PrivateKey(asn1Encoded: Array(pem.derBytes))
+                    self = try .init(rawRepresentation: parsed.privateKey.privateKey)
+                default:
+                    throw CryptoKitASN1Error.invalidPEMDocument
+                }
+            }
+
+            public init<Bytes: RandomAccessCollection>(derRepresentation: Bytes) throws where Bytes.Element == UInt8 {
+                let bytes = Array(derRepresentation)
+
+                // We have to try to parse this twice because we have no informaton about what kind of key this is.
+                // We try with PKCS#8 first, and then fall back to SEC.1.
+
+                do {
+                    let key = try ASN1.PKCS8PrivateKey(asn1Encoded: bytes)
+                    self = try .init(rawRepresentation: key.privateKey.privateKey)
+                } catch {
+                    let key = try ASN1.SEC1PrivateKey(asn1Encoded: bytes)
+                    self = try .init(rawRepresentation: key.privateKey)
+                }
+            }
+
+            init(impl: SECGCurvePrivateKeyImpl<SECP256K1.CurveDetails>) {
+                self.impl = impl
+            }
+
+            public var publicKey: SECP256K1.KeyAgreement.PublicKey {
+                return PublicKey(impl: impl.publicKey())
+            }
+
+            public var rawRepresentation: Data { impl.rawRepresentation }
+            public var x963Representation: Data { impl.x963Representation }
+
+            public var derRepresentation: Data {
+                let pkey = ASN1.PKCS8PrivateKey(algorithm: .ecdsaSECP256K1, privateKey: Array(self.rawRepresentation), publicKey: Array(self.publicKey.x963Representation))
+                var serializer = ASN1.Serializer()
+
+                // Serializing these keys can't throw
+                try! serializer.serialize(pkey)
+                return Data(serializer.serializedBytes)
+            }
+
+            public var pemRepresentation: String {
+                let pemDocument = ASN1.PEMDocument(type: "PRIVATE KEY", derBytes: self.derRepresentation)
+                return pemDocument.pemString
+            }
+        }
+    }
+}
 
 // MARK: - SECP256R1 + DH
 extension SECP256R1.KeyAgreement.PrivateKey: DiffieHellmanKeyAgreement {
@@ -835,6 +1097,21 @@ extension P521.KeyAgreement.PrivateKey: DiffieHellmanKeyAgreement {
     /// - Returns: Returns a shared secret
     /// - Throws: An error occurred while computing the shared secret
     public func sharedSecretFromKeyAgreement(with publicKeyShare: P521.KeyAgreement.PublicKey) throws -> SharedSecret {
+        #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
+        return try self.coreCryptoSharedSecretFromKeyAgreement(with: publicKeyShare)
+        #else
+        return try self.openSSLSharedSecretFromKeyAgreement(with: publicKeyShare)
+        #endif
+    }
+}
+// MARK: - SECP256K1 + DH
+extension SECP256K1.KeyAgreement.PrivateKey: DiffieHellmanKeyAgreement {
+    /// Performs a key agreement with provided public key share.
+    ///
+    /// - Parameter publicKeyShare: The public key to perform the ECDH with.
+    /// - Returns: Returns a shared secret
+    /// - Throws: An error occurred while computing the shared secret
+    public func sharedSecretFromKeyAgreement(with publicKeyShare: SECP256K1.KeyAgreement.PublicKey) throws -> SharedSecret {
         #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
         return try self.coreCryptoSharedSecretFromKeyAgreement(with: publicKeyShare)
         #else

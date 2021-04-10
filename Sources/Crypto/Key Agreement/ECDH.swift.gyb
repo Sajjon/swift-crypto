@@ -17,9 +17,15 @@
 #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
 typealias NISTCurvePublicKeyImpl = CoreCryptoNISTCurvePublicKeyImpl
 typealias NISTCurvePrivateKeyImpl = CoreCryptoNISTCurvePrivateKeyImpl
+
+typealias SECGCurvePublicKeyImpl = Never
+typealias SECGCurvePrivateKeyImpl = Never
 #else
 typealias NISTCurvePublicKeyImpl = OpenSSLNISTCurvePublicKeyImpl
 typealias NISTCurvePrivateKeyImpl = OpenSSLNISTCurvePrivateKeyImpl
+
+typealias SECGCurvePublicKeyImpl = OpenSSLNISTCurvePublicKeyImpl
+typealias SECGCurvePrivateKeyImpl = OpenSSLNISTCurvePrivateKeyImpl
 #endif
 
 import Foundation
@@ -29,29 +35,34 @@ import Foundation
 // see section `gyb` in `README` for details.
 
 %{
-    NIST_CURVES = ["SECP256R1", "P384", "P521"]
-    NIST_OR_SECG_PREFIX = "NIST"
+    NIST_CURVES = [{"curve": "SECP256R1", "curveGroup": "NIST"}, {"curve": "P384", "curveGroup": "NIST"}, {"curve": "P521", "curveGroup": "NIST"}]
+    SECG_CURVES = [{"curve": "SECP256K1", "curveGroup": "SECG"}]
+    EC_CURVES_WITH_GROUP = NIST_CURVES + SECG_CURVES
     CURVES_FUNC = ["Signing", "KeyAgreement"]
 }%
-% for CURVE in NIST_CURVES:
+% for CURVE_AND_CURVE_GROUP in EC_CURVES_WITH_GROUP:
+%{
+    CURVE               = CURVE_AND_CURVE_GROUP["curve"]
+    NIST_OR_SECG_PREFIX = CURVE_AND_CURVE_GROUP["curveGroup"]
+}%
 % for FUNC in CURVES_FUNC:
 // MARK: - ${CURVE} + ${FUNC}
 extension ${CURVE} {
     public enum ${FUNC} {
     
         public struct PublicKey: ${NIST_OR_SECG_PREFIX}ECPublicKey {
-            var impl: NISTCurvePublicKeyImpl<${CURVE}.CurveDetails>
+            var impl: ${NIST_OR_SECG_PREFIX}CurvePublicKeyImpl<${CURVE}.CurveDetails>
 
             public init<D: ContiguousBytes>(rawRepresentation: D) throws {
-                impl = try NISTCurvePublicKeyImpl(rawRepresentation: rawRepresentation)
+                impl = try ${NIST_OR_SECG_PREFIX}CurvePublicKeyImpl(rawRepresentation: rawRepresentation)
             }
 
             public init<Bytes: ContiguousBytes>(compactRepresentation: Bytes) throws {
-                impl = try NISTCurvePublicKeyImpl(compactRepresentation: compactRepresentation)
+                impl = try ${NIST_OR_SECG_PREFIX}CurvePublicKeyImpl(compactRepresentation: compactRepresentation)
             }
 
             public init<Bytes: ContiguousBytes>(x963Representation: Bytes) throws {
-                impl = try NISTCurvePublicKeyImpl(x963Representation: x963Representation)
+                impl = try ${NIST_OR_SECG_PREFIX}CurvePublicKeyImpl(x963Representation: x963Representation)
             }
 
             public init(pemRepresentation: String) throws {
@@ -68,7 +79,7 @@ extension ${CURVE} {
                 self = try .init(x963Representation: parsed.key)
             }
 
-            init(impl: NISTCurvePublicKeyImpl<${CURVE}.CurveDetails>) {
+            init(impl: ${NIST_OR_SECG_PREFIX}CurvePublicKeyImpl<${CURVE}.CurveDetails>) {
                 self.impl = impl
             }
 
@@ -91,19 +102,19 @@ extension ${CURVE} {
             }
         }
 
-        public struct PrivateKey: NISTECPrivateKey {
-            let impl: NISTCurvePrivateKeyImpl<${CURVE}.CurveDetails>
+        public struct PrivateKey: ${NIST_OR_SECG_PREFIX}ECPrivateKey {
+            let impl: ${NIST_OR_SECG_PREFIX}CurvePrivateKeyImpl<${CURVE}.CurveDetails>
 
             public init(compactRepresentable: Bool = true) {
-                impl = NISTCurvePrivateKeyImpl(compactRepresentable: compactRepresentable)
+                impl = ${NIST_OR_SECG_PREFIX}CurvePrivateKeyImpl(compactRepresentable: compactRepresentable)
             }
 
             public init<Bytes: ContiguousBytes>(x963Representation: Bytes) throws {
-                impl = try NISTCurvePrivateKeyImpl(x963: x963Representation)
+                impl = try ${NIST_OR_SECG_PREFIX}CurvePrivateKeyImpl(x963: x963Representation)
             }
 
             public init<Bytes: ContiguousBytes>(rawRepresentation: Bytes) throws {
-                impl = try NISTCurvePrivateKeyImpl(data: rawRepresentation)
+                impl = try ${NIST_OR_SECG_PREFIX}CurvePrivateKeyImpl(data: rawRepresentation)
             }
 
             public init(pemRepresentation: String) throws {
@@ -136,7 +147,7 @@ extension ${CURVE} {
                 }
             }
 
-            init(impl: NISTCurvePrivateKeyImpl<${CURVE}.CurveDetails>) {
+            init(impl: ${NIST_OR_SECG_PREFIX}CurvePrivateKeyImpl<${CURVE}.CurveDetails>) {
                 self.impl = impl
             }
 
@@ -166,7 +177,11 @@ extension ${CURVE} {
 % end
 % end
 
-% for CURVE in NIST_CURVES:
+% for CURVE_AND_CURVE_GROUP in EC_CURVES_WITH_GROUP:
+%{
+    CURVE               = CURVE_AND_CURVE_GROUP["curve"]
+    NIST_OR_SECG_PREFIX = CURVE_AND_CURVE_GROUP["curveGroup"]
+}%
 // MARK: - ${CURVE} + DH
 extension ${CURVE}.KeyAgreement.PrivateKey: DiffieHellmanKeyAgreement {
     /// Performs a key agreement with provided public key share.
