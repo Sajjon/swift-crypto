@@ -17,19 +17,9 @@
 #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS)) && !CRYPTO_IN_SWIFTPM_FORCE_BUILD_API
 typealias NISTCurvePublicKeyImpl = CoreCryptoNISTCurvePublicKeyImpl
 typealias NISTCurvePrivateKeyImpl = CoreCryptoNISTCurvePrivateKeyImpl
-
-// TODO change ths
-typealias SECGCurvePublicKeyImpl = CoreCryptoNISTCurvePublicKeyImpl
-// TODO change ths
-typealias SECGCurvePrivateKeyImpl = CoreCryptoNISTCurvePrivateKeyImpl
 #else
 typealias NISTCurvePublicKeyImpl = OpenSSLNISTCurvePublicKeyImpl
 typealias NISTCurvePrivateKeyImpl = OpenSSLNISTCurvePrivateKeyImpl
-
-// TODO change ths
-typealias SECGCurvePublicKeyImpl = OpenSSLNISTCurvePublicKeyImpl
-// TODO change ths
-typealias SECGCurvePrivateKeyImpl = OpenSSLNISTCurvePrivateKeyImpl
 #endif
 
 import Foundation

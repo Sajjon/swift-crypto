@@ -18,8 +18,47 @@
 @_implementationOnly import CCryptoBoringSSLShims
 import Foundation
 
+
+
+
+///// A wrapper around BoringSSL's EC_GROUP object that handles reference counting and
+///// liveness.
+//@usableFromInline
+//class BoringSSLEllipticCurveGroup {
+//    /* private but usableFromInline */ @usableFromInline var _group: OpaquePointer
+//
+//    @usableFromInline
+//    init(_ curve: CurveName) throws {
+//        guard let group = CCryptoBoringSSL_EC_GROUP_new_by_curve_name(curve.baseNID) else {
+//            throw CryptoKitError.internalBoringSSLError()
+//        }
+//
+//        self._group = group
+//    }
+//
+//    deinit {
+//        CCryptoBoringSSL_EC_GROUP_free(self._group)
+//    }
+//}
+
+
+
+
 @usableFromInline
-protocol OpenSSLSupportedNISTCurve {
+protocol EllipticCurve {
+    @inlinable
+    static var coordinateByteCount: Int { get }
+}
+
+@usableFromInline
+protocol SECGEllipticCurve: EllipticCurve {}
+
+
+
+
+
+@usableFromInline
+protocol OpenSSLSupportedNISTCurve: EllipticCurve {
     @inlinable
     static var group: BoringSSLEllipticCurveGroup { get }
 }
@@ -63,10 +102,9 @@ extension P521 {
 
 extension SECP256K1 {
     @usableFromInline
-    struct CurveDetails: OpenSSLSupportedNISTCurve {
+    struct CurveDetails: SECGEllipticCurve {
         @inlinable
-        static var group: BoringSSLEllipticCurveGroup {
-//            return try! BoringSSLEllipticCurveGroup(.p521)
+        static var coordinateByteCount: Int {
             todoK1()
         }
     }
