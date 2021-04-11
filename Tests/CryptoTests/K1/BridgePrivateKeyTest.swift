@@ -14,21 +14,20 @@ import XCTest
 
 @testable import K1
 
-public protocol EllipticCurve: NISTSigning {}
 
-extension SECP256R1: EllipticCurve {}
+extension SECP256R1: ECSigning {}
 public extension SECP256R1 {
     typealias PublicKey = Signing.PublicKey
     typealias PrivateKey = Signing.PrivateKey
     typealias ECDSASignature = Signing.ECDSASignature
 }
 
-//extension SECP256K1: EllipticCurve {}
-//public extension SECP256K1 {
-//    typealias PublicKey = Signing.PublicKey
-//    typealias PrivateKey = Signing.PrivateKey
-//    typealias ECDSASignature = Signing.ECDSASignature
-//}
+extension SECP256K1: ECSigning {}
+public extension SECP256K1 {
+    typealias PublicKey = Signing.PublicKey
+    typealias PrivateKey = Signing.PrivateKey
+    typealias ECDSASignature = Signing.ECDSASignature
+}
 
 final class BridgePrivateKeyTests: XCTestCase {
     
@@ -83,7 +82,7 @@ final class BridgePrivateKeyTests: XCTestCase {
     // https://boringssl.googlesource.com/boringssl/+/refs/heads/master/third_party/wycheproof_testvectors/ecdsa_secp256k1_sha256_test.json
     // tcId = 1
     func test_Kilo_SECP256K1Wycheproof() throws {
-        let vector = SignatureTestVector.init(
+        let _ = SignatureTestVector.init(
             comment: "K1 test vector",
             msg: "313233343030",
             sig: "3046022100813ef79ccefa9a56f7ba805f0e478584fe5f0dd5f567bc09b5123ccbc9832365022100900e75ad233fcc908509dbff5922647db37c21f4afd3203ae8dc4ae7794b0f87",
@@ -92,12 +91,12 @@ final class BridgePrivateKeyTests: XCTestCase {
             tcId: 1
         )
         
-        let key = ECDSAKey(
+        let _ = ECDSAKey(
             uncompressed: "04b838ff44e5bc177bf21189d0766082fc9d843226887fc9760371100b7ee20a6ff0c9d75bfba7b31a6bca1974496eeb56de357071955d83c4b1badaa0b21832e9"
         )
         
+        XCTFail("uncomment block below")
         try orFail {
-            XCTFail("uncomment block below")
 //            try doTestVectorAndKey(
 //                vector: vector,
 //                key: key,
@@ -110,7 +109,7 @@ final class BridgePrivateKeyTests: XCTestCase {
 }
 
 extension BridgePrivateKeyTests {
-    func doTestPublicKeyFromPrivateKey<C: EllipticCurve>(
+    func doTestPublicKeyFromPrivateKey<C: ECSigning>(
         curve: C.Type,
         privateKeyHex: String,
         expectedPublicKeyHex: String,

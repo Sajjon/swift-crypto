@@ -148,7 +148,7 @@ class SignatureTests: XCTestCase {
         }
     }
     
-    func testGroup<C: NISTSigning, HF: HashFunction>(
+    func testGroup<C: ECSigning, HF: HashFunction>(
         group: ECDSATestGroup,
         curve: C.Type,
         hashFunction: HF.Type,
@@ -329,7 +329,7 @@ class SignatureTests: XCTestCase {
 }
 
 extension XCTestCase {
-    func doTestVectorAndKey<C: NISTSigning, HF: HashFunction>(
+    func doTestVectorAndKey<C: ECSigning, HF: HashFunction>(
         vector testVector: SignatureTestVector,
         key: ECDSAKey,
         curve: C.Type,
@@ -349,7 +349,7 @@ extension XCTestCase {
         )
     }
     
-    func doTestVector<C: NISTSigning, HF: HashFunction>(
+    func doTestVector<C: ECSigning, HF: HashFunction>(
         vector testVector: SignatureTestVector,
         publicKey key: C.PublicKey,
         curve: C.Type,
