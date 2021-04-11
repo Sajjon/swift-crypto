@@ -19,17 +19,7 @@
 import Foundation
 
 @usableFromInline
-protocol OpenSSLSupportedNISTCurve: EllipticCurve {
-    @inlinable
-    static var group: BoringSSLEllipticCurveGroup { get }
-}
-
-extension OpenSSLSupportedNISTCurve {
-    @inlinable
-    static var coordinateByteCount: Int {
-        return self.group.coordinateByteCount
-    }
-}
+protocol OpenSSLSupportedNISTCurve: EllipticCurve where Group == BoringSSLEllipticCurveGroup {}
 
 extension P256 {
     @usableFromInline

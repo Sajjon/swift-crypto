@@ -51,19 +51,18 @@ class BitcoinCoreSecp256k1ECPublicKeyWrapper<Curve: SECGEllipticCurve> {
     }
 
     init<Bytes: ContiguousBytes>(x963Representation bytes: Bytes) throws {
-//        // Before we do anything, we validate that the x963 representation has the right number of bytes.
-//        // This is because BoringSSL will quietly accept shorter byte counts, though it will reject longer ones.
-//        // This brings our behaviour into line with CryptoKit
-//        let group = Curve.group
-//        let length = bytes.withUnsafeBytes { $0.count }
-//        guard length == (group.coordinateByteCount * 2) + 1 else {
-//            throw CryptoKitError.incorrectParameterSize
-//        }
-//
-//        self.key = try group.makeUnsafeOwnedECKey()
-//        var (x, y) = try bytes.readx963PublicNumbers()
-//        try self.setPublicKey(x: &x, y: &y)
-        todoK1()
+        // Before we do anything, we validate that the x963 representation has the right number of bytes.
+        // This is because BoringSSL will quietly accept shorter byte counts, though it will reject longer ones.
+        // This brings our behaviour into line with CryptoKit
+        let group = Curve.group
+        let length = bytes.withUnsafeBytes { $0.count }
+        guard length == (group.coordinateByteCount * 2) + 1 else {
+            throw CryptoKitError.incorrectParameterSize
+        }
+
+        self.key = try group.makeUnsafeOwnedECKey()
+        var (x, y) = try bytes.readx963PublicNumbers()
+        try self.setPublicKey(x: &x, y: &y)
     }
 
     init<Bytes: ContiguousBytes>(rawRepresentation bytes: Bytes) throws {

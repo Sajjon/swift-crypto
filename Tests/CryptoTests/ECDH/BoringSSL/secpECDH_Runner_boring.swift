@@ -26,7 +26,8 @@ import XCTest
 
 extension NISTECDHTests {
     func testGroupOpenSSL<PrivKey: NISTECPrivateKey & DiffieHellmanKeyAgreement, Curve: OpenSSLSupportedNISTCurve>(group: ECDHTestGroup, privateKeys: PrivKey.Type, onCurve curve: Curve.Type, file: StaticString = #file, line: UInt = #line) {
-        func padKeyIfNecessary(vector: String, curveDetails: OpenSSLSupportedNISTCurve.Type, file: StaticString = #file, line: UInt = #line) throws -> [UInt8] {
+        
+        func padKeyIfNecessary<Curve: OpenSSLSupportedNISTCurve>(vector: String, curveDetails: Curve.Type, file: StaticString = #file, line: UInt = #line) throws -> [UInt8] {
             // There are a few edge cases here.
             //
             // First, our raw bytes function requires the
